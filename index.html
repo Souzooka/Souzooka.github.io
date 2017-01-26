@@ -1,13 +1,230 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-	<link rel="stylesheet" href="css/styles.css">
-	<meta charset="UTF-8">
-	<title>Example Page</title>
-	<script src="js/app.js"></script>
-</head>
-<body>
-	<h1>Hello World!</h1>
-	paragraph
-</body>
+<html>
+	<head>
+		<meta charset="UTF-8"> 
+		<title>GeeMail E-mail Client</title>
+		<script src="js/mail-generator.js"></script>
+		<link rel="icon" type="image/png" href="css/img/favicon-32x32.png" sizes="32x32" />
+		<link rel="icon" type="image/png" href="css/img/favicon-16x16.png" sizes="16x16" />
+		<link href="css/style.css" rel="stylesheet" media="screen">
+    <script>
+      window.onload = function(){
+        // ALL OF YOUR JAVASCRIPT CODE SHOULD GO HERE. 
+        // We have to use window.onload so your JavaScript doesn't execute until the page has loaded and all HTML has been downloaded to your browser
+			
+		var initMessageCount = window.geemails.length;
+		var unreadMessageCount = 0;
+		var loadedMsgs = 0;
+		var maxInboxSize = 25;
+		
+		//Changes inbox count when messages are read(unimplemented) or added.
+		function updateMsgCount() {
+
+			// toLocaleString() 
+			document.getElementById("unreadMsgCount").innerHTML = unreadMessageCount.toLocaleString();
+			document.getElementById("loadedMsgs").innerHTML = (" (" + loadedMsgs.toLocaleString() + ")");
+			if (unreadMessageCount === 1) {
+				document.getElementById("messagePlural").innerHTML = "message!";
+			}
+			else {
+				document.getElementById("messagePlural").innerHTML = "messages!";
+			}
+
+		}
+		
+		//Increments message count variables for unread messages and messages currently in the inbox.
+		function incrementMsgCount() {
+
+			unreadMessageCount += 1;
+			loadedMsgs += 1;
+			updateMsgCount();
+
+		}
+		
+		// Unused, decrements message count variables for unread messages.
+		function decrementMsgCount() {
+
+			unreadMessageCount -= 1;
+			updateMsgCount();
+
+		}
+
+		//Show the message for the corresponding show button.
+		function showMessage(id) {
+
+			id = "messageBody" + id.slice(13);
+			document.getElementById(id).style.display = "inline";
+
+		}
+
+		//Hides the message for the corresponding hide button.
+		function hideMessage(id) {
+
+			id = "messageBody" + id.slice(13);
+			document.getElementById(id).style.display = "none";
+
+		}
+
+		//Creates a new empty message object.
+		function initMessage(id) {
+			var emptyMessage = {};
+			createMessage(emptyMessage);
+		}
+
+		//Adds properties to message object.
+		function createMessage(message) {
+
+			// Container
+			message.container = document.createElement('div');
+			message.container.className = "message";
+
+			message.seen = false;
+			message.visible = false;
+
+			// Create the content of the message, including classes for anything which needs specific styles.
+
+			message.readImage = document.createElement('img');
+			message.readImage.src = "css/img/Unread.png";
+			message.readImage.id = "messageReadImage" + loadedMsgs;
+			message.readImage.classname = "messageReadImage";
+			message.readImage.innerHTML = "";
+			message.readImage.height = 18;
+
+			//Buttons
+			//Show Message Button
+			message.showButton = document.createElement('button');
+			message.showButton.innerHTML = "Show Message";
+			message.showButton.type = "button";
+			message.showButton.id = "msgShowButton" + loadedMsgs;
+			message.showButton.className = "msgButton";
+			message.showButton.onclick = function () {
+				if (!message.visible) {
+					showMessage(this.id);
+					message.visible = true;
+					message.showButton.innerHTML = "Hide Message";
+				}
+				else {
+					hideMessage(this.id);
+					message.visible = false;
+					message.showButton.innerHTML = "Show Message";
+				}
+				if (!message.seen) {
+					message.seen = true;
+					message.readImage.src = "css/img/Read.png";
+					decrementMsgCount();
+				}
+			};
+
+			var newMessage = getNewMessage();
+
+			//Subject
+			message.subject = document.createElement('span');
+			message.subject.className = "messageSubject";
+			if (initMessageCount > loadedMsgs) {
+			message.subject.innerHTML = "Subject: <span class='messageSubjectInner'>" +  window.geemails[loadedMsgs].subject + "</span>";
+			}
+			else {
+			message.subject.innerHTML = "Subject: <span class='messageSubjectInner'>" +  newMessage.subject + "</span>";
+			}
+			
+			//Sender
+			message.sender = document.createElement('span');
+			message.sender.className = "messageSender";
+			if (initMessageCount > loadedMsgs) {
+				message.sender.innerHTML = "Sender: <span class='messageSenderInner'>" + window.geemails[loadedMsgs].sender + "</span>";
+			}
+			else {
+				message.sender.innerHTML = "Sender: <span class='messageSenderInner'>" + newMessage.sender + "</span>";
+			}
+
+			//Date
+			message.date = document.createElement('span');
+			message.date.className = "messageDate";
+			if (initMessageCount > loadedMsgs) {
+				message.date.innerHTML = "Date: <span class='messageDateInner'>" + window.geemails[loadedMsgs].date + "</span>";
+			}
+			else {
+				message.date.innerHTML = "Date: <span class='messageDateInner'>" + newMessage.date + "</span>";
+			}
+
+			//Body
+			message.body = document.createElement('span');
+			message.body.id = "messageBody" + loadedMsgs;
+			message.body.className = "messageBody";
+			if (initMessageCount > loadedMsgs) {
+				message.body.innerHTML = "<br/>" + "<br/>" + window.geemails[loadedMsgs].body;
+			}
+			else {
+				message.body.innerHTML = "<br/>" + "<br/>" + newMessage.body;
+			}
+
+			addBuiltMessage(message);
+		}
+	
+		//Puts the message object, now with properties, onto the webpage (also calls incrementMsgCount())
+		function addBuiltMessage(builtMessage) {
+
+			msgContainer.appendChild(builtMessage.container);
+			document.getElementsByClassName("message")[loadedMsgs].appendChild(builtMessage.readImage);
+			document.getElementsByClassName("message")[loadedMsgs].appendChild(builtMessage.showButton);
+
+			document.getElementsByClassName("message")[loadedMsgs].appendChild(builtMessage.subject);
+			document.getElementsByClassName("message")[loadedMsgs].appendChild(builtMessage.sender);
+			document.getElementsByClassName("message")[loadedMsgs].appendChild(builtMessage.date);
+			document.getElementsByClassName("message")[loadedMsgs].appendChild(builtMessage.body);
+			document.getElementsByClassName("message")[loadedMsgs].appendChild(document.createElement('hr'));
+
+			// Update inbox count
+			incrementMsgCount();
+
+
+			if (loadedMsgs > initMessageCount) {
+				resetInterval();
+			}
+		}
+
+		//Instantly add 10(default) messages, based on windows.geemail.length
+		while (initMessageCount > loadedMsgs) {
+			initMessage();
+		}
+
+		//Initial random interval for next message after initial messages (1-10 seconds)
+		var interval = setInterval(initMessage, ((Math.random() * 9000) + 1000));
+
+		//Resets interval and assigns a new interval for new messages.
+		function resetInterval(forceUpdate) {
+			clearInterval(interval);
+			if ((loadedMsgs < maxInboxSize) || forceUpdate) {
+				interval = setInterval(initMessage, ((Math.random() * 9000) + 1000));
+			}
+		}
+    };
+    </script>
+	</head>
+	<body>
+	
+	<label id for="nightMode">Night Mode</label>
+	<input type="checkbox" id="nightMode">
+	
+	<div class="main">
+		
+		<div id="headerImg">
+		</div>
+		
+		<hr/ id="headerEnd">
+		
+		<div id="mainBody">
+			<p id="unreadMsg">You have <span id="unreadMsgCount">0</span><span id="loadedMsgs"> (0)</span> unread <span id="messagePlural">message(s)!</span></p>
+						
+			<div id="msgContainer">
+			</div>
+			
+		</div>
+		
+		<div id = "footer">
+			<!-- NOTE: Find way to prevent this from going up too high on page -->
+			<p>Copyright 2013-2016 <a href="https://github.com/Souzooka/">Geegle</a></p>
+		</div>
+		
+	</div>
+	</body>
 </html>
