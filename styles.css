@@ -59,3 +59,15 @@ h2 {
   border:10px solid green;
   width:90%;
 }
+
+#technical-skills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.skill {
+  width: 33%;
+  min-width: 33%;
+}
